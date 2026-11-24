@@ -36,6 +36,19 @@ def main() -> int:
     path = os.path.join(output_dir, "entry.txt")
     with open(path, "w", encoding="utf-8", newline="") as f:
         f.write(LINE)
+    # Post-write gate: read the file back and confirm it holds exactly
+    # the line — non-empty, a single line, within the 1-160 character
+    # gate — so a truncated or empty write can never pass silently.
+    with open(path, "r", encoding="utf-8", newline="") as f:
+        written = f.read()
+    if written != LINE:
+        raise ValueError("written output does not match the line")
+    if not written:
+        raise ValueError("written output is empty")
+    if "\n" in written:
+        raise ValueError("written output is not a single line")
+    if not 1 <= len(written) <= 160:
+        raise ValueError("written output outside the 1-160 character gate")
     text = LINE
     print(f"wrote {path}: {len(text)} characters")
     return 0
